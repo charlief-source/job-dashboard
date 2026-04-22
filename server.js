@@ -6,7 +6,7 @@ const path = require('path');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 const PROFIL = `LEBENSLAUF: Anne Charlotte Forstmann. MSc Psychology of Economic Life (LSE, Distinction, Rob Farr Award). BSc Politics/Psychology/Law/Economics (UvA, 2:1). Wissenschaftliche Mitarbeiterin TU Braunschweig seit 11/2023: empirische Studien (qual/quant/Computational Methods/ML), Projektkoordination Museum fuer Naturkunde Berlin, Drittmittelprojekt, Konferenzen, Lehre, Newsletter. 180 Degrees Consulting Amsterdam: 25+ Berater geschult (McKinsey 7-Step, BCG), 10 NGO-Klienten in 3 Laendern (NL/Ruanda/Libanon), 100% Lieferquote. Scribbr: Teamleitung, Prozessdesign, Skalierung, SCRUM/OKRs. Skills: R, SPSS, Qualtrics, Atlas.ti, Asana, Notion, Power BI (laufend), SQL (laufend). Sprachen: DE, EN C2, ES B2, NL B1. Zertifikate: Projektmanagement (GradTUBS 2025), Computational Text Analysis R (GESIS 2024).
 PRAEFERENZEN: Klein-Team (2-5), Hybrid, Dienstreisen gerne, viel Abwechslung. Aufgaben: Forschung/Analyse, Beratung/Strategie, Projektmanagement. Gesellschaftlicher Impact + Einfluss auf Strategie wichtig. Branchen: Beratung, NGO/Social Impact, Tech/Daten, Wissenschaft. Grosskonzern oder Startup. Karriereziel: Fuehrungskraft (People & Strategy) 3-5 Jahre. Gehalt: 55.000-70.000 EUR.`;
