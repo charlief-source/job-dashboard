@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Dashboard · Anne Forstmann</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F5F0;--surface:#fff;--surface2:#F0EDE6;--border:#E2DDD5;--border2:#CDC8BF;--text:#1C1917;--text2:#78716C;--text3:#A8A29E;--accent:#1C3A2E;--accent-light:#E8F0EC;--green:#166534;--green-bg:#DCFCE7;--amber:#92400E;--amber-bg:#FEF3C7;--red:#991B1B;--red-bg:#FEE2E2;--blue:#1E3A5F;--blue-bg:#DBEAFE;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6;}
+.header{background:var(--accent);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.header-left h1{font-family:'DM Serif Display',serif;font-size:26px;color:#fff;letter-spacing:-0.3px;}
+.header-left p{font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;}
+.server-url{display:flex;gap:8px;align-items:center;}
+.server-url input{width:280px;height:34px;padding:0 10px;border:1px solid rgba(255,255,255,0.2);border-radius:6px;background:rgba(255,255,255,0.1);color:#fff;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.server-url input::placeholder{color:rgba(255,255,255,0.4);}
+.server-url input:focus{border-color:rgba(255,255,255,0.5);}
+.btn-save{height:34px;padding:0 14px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:6px;color:#fff;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.btn-save:hover{background:rgba(255,255,255,0.25);}
+.url-status{font-size:12px;color:rgba(255,255,255,0.5);}
+.url-status.ok{color:#86EFAC;}
+.container{max-width:1300px;margin:0 auto;padding:1.5rem 2rem;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
+.stat-lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;}
+.stat-val{font-family:'DM Serif Display',serif;font-size:30px;line-height:1;}
+.stat-val.g{color:var(--green);}.stat-val.a{color:var(--amber);}.stat-val.r{color:var(--red);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;}
+.card h2{font-family:'DM Serif Display',serif;font-size:19px;margin-bottom:4px;}
+.card-sub{font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.5;}
+textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--bg);resize:vertical;min-height:110px;outline:none;transition:border-color .15s;line-height:1.6;}
+textarea:focus{border-color:var(--accent);}
+textarea::placeholder{color:var(--text3);}
+.btn-row{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap;}
+.btn{height:38px;padding:0 20px;border-radius:6px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);transition:all .15s;}
+.btn:hover{background:var(--surface2);}
+.btn:active{transform:scale(0.98);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-primary:hover{background:#264d3e;}
+.status{font-size:13px;color:var(--text2);}
+.status.ok{color:var(--green);}.status.err{color:var(--red);}
+.progress{display:none;height:3px;background:var(--border);border-radius:99px;margin-top:10px;overflow:hidden;}
+.progress.active{display:block;}
+.progress-bar{height:100%;background:var(--accent);border-radius:99px;animation:prog 1.6s ease-in-out infinite;}
+@keyframes prog{0%{width:0%;margin-left:0%;}50%{width:60%;margin-left:20%;}100%{width:0%;margin-left:100%;}}
+.legend{display:flex;gap:14px;margin-bottom:8px;flex-wrap:wrap;align-items:center;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
+.ldot{width:8px;height:8px;border-radius:50%;}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+th{padding:9px 13px;text-align:left;font-size:11px;font-weight:500;color:var(--text2);background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap;text-transform:uppercase;letter-spacing:0.04em;}
+td{padding:9px 13px;border-bottom:1px solid var(--border);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr.drow:hover td{background:#FAFAF8;}
+.section-row td{background:var(--accent-light);font-size:11px;font-weight:500;color:var(--accent);letter-spacing:0.06em;text-transform:uppercase;padding:5px 13px;border-bottom:1px solid var(--border);}
+.empty-row td{text-align:center;color:var(--text3);padding:3rem;font-style:italic;}
+.score-ring{display:inline-flex;align-items:center;justify-content:center;width:37px;height:37px;border-radius:50%;font-weight:500;font-size:13px;}
+.rg{background:var(--green-bg);color:var(--green);}.ra{background:var(--amber-bg);color:var(--amber);}.rr{background:var(--red-bg);color:var(--red);}
+.tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;margin-top:3px;text-transform:uppercase;letter-spacing:0.04em;}
+.tg{background:var(--green-bg);color:var(--green);}.ta{background:var(--amber-bg);color:var(--amber);}.tr{background:var(--red-bg);color:var(--red);}
+.pill{font-size:11px;padding:2px 8px;border-radius:99px;}
+.pill-r{background:var(--green-bg);color:var(--green);}.pill-h{background:var(--blue-bg);color:var(--blue);}.pill-o{background:var(--surface2);color:var(--text2);}
+.sub-bars{display:flex;flex-direction:column;gap:4px;}
+.sub-row{display:flex;align-items:center;gap:6px;}
+.sub-lbl{font-size:11px;color:var(--text2);width:72px;flex-shrink:0;}
+.bar-track{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+.bar-fill{height:4px;border-radius:99px;}
+.bcv{background:#7C3AED;}.bpref{background:#059669;}.bsal{background:#2563EB;}.bcar{background:#D97706;}
+.sub-n{font-size:11px;color:var(--text2);min-width:22px;text-align:right;}
+.detail{font-size:12px;color:var(--text2);line-height:1.55;}
+.detail strong{color:var(--text);font-weight:500;}
+.detail ul{margin:3px 0 5px 14px;}
+.gap-li{color:var(--red);}
+.firm-chip{font-size:11px;background:var(--surface2);border-radius:4px;padding:3px 7px;margin-bottom:5px;color:var(--text2);display:block;}
+.btn-del{font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;}
+.btn-del:hover{background:var(--red-bg);color:var(--red);border-color:var(--red-bg);}
+@media(max-width:768px){.stats{grid-template-columns:repeat(2,1fr);}.container{padding:1rem;}.header{flex-direction:column;align-items:flex-start;}.server-url input{width:100%;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Job Dashboard</h1>
+    <p>Anne Charlotte Forstmann · Bewerbungs-Tracker</p>
+  </div>
+  <div class="server-url">
+    <input type="text" id="serverUrl" placeholder="https://deine-app.onrender.com" />
+    <button class="btn-save" onclick="saveUrl()">Verbinden</button>
+    <span class="url-status" id="urlStatus"></span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="stats">
+    <div class="stat"><div class="stat-lbl">Jobs gesamt</div><div class="stat-val" id="s0">0</div></div>
+    <div class="stat"><div class="stat-lbl">Unbedingt bewerben</div><div class="stat-val g" id="s1">0</div></div>
+    <div class="stat"><div class="stat-lbl">Ggf. bewerben</div><div class="stat-val a" id="s2">0</div></div>
+    <div class="stat"><div class="stat-lbl">Weglassen</div><div class="stat-val r" id="s3">0</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Stelle analysieren</h2>
+    <p class="card-sub">Karriereseite öffnen → alles markieren (Strg+A) → kopieren → hier einfügen → Analysieren klicken. Fertig.</p>
+    <textarea id="jobText" rows="6" placeholder="Stellentext hier einfügen …"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnAnalyze" onclick="analyze()">Analysieren →</button>
+      <button class="btn" onclick="document.getElementById('jobText').value=''">Leeren</button>
+      <span class="status" id="statusMsg"></span>
+    </div>
+    <div class="progress" id="progress"><div class="progress-bar"></div></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="ldot" style="background:#166534;"></div>Unbedingt bewerben (70+)</div>
+    <div class="legend-item"><div class="ldot" style="background:#92400E;"></div>Ggf. bewerben (45–69)</div>
+    <div class="legend-item"><div class="ldot" style="background:#991B1B;"></div>Weglassen (&lt;45)</div>
+    <div style="margin-left:auto;"><button class="btn" onclick="exportCSV()" style="height:32px;font-size:12px;padding:0 14px;">Export CSV</button></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:110px;">Firma</th>
+          <th style="width:130px;">Rolle</th>
+          <th style="width:85px;">Ort</th>
+          <th style="width:72px;">Modell</th>
+          <th style="width:110px;">Gehalt</th>
+          <th style="width:120px;">Recruiter</th>
+          <th style="width:56px;">Score</th>
+          <th style="width:195px;">Subscores</th>
+          <th style="width:215px;">Details</th>
+          <th style="width:44px;"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr class="empty-row"><td colspan="10">Noch keine Jobs – Server verbinden und ersten Stellentext einfügen.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+let jobs = [];
+let serverUrl = '';
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('jobdash_jobs_v3');
+    if (saved) jobs = JSON.parse(saved);
+    serverUrl = localStorage.getItem('jobdash_server') || '';
+    if (serverUrl) {
+      document.getElementById('serverUrl').value = serverUrl;
+      document.getElementById('urlStatus').textContent = 'Verbunden ✓';
+      document.getElementById('urlStatus').className = 'url-status ok';
+    }
+  } catch(e) {}
+  renderTable();
+}
+
+function saveState() {
+  try { localStorage.setItem('jobdash_jobs_v3', JSON.stringify(jobs)); } catch(e) {}
+}
+
+async function saveUrl() {
+  const url = document.getElementById('serverUrl').value.trim().replace(/\/$/, '');
+  const statusEl = document.getElementById('urlStatus');
+  if (!url) return;
+  statusEl.textContent = 'Prüfe …';
+  statusEl.className = 'url-status';
+  try {
+    const r = await fetch(url + '/api/ping');
+    const d = await r.json();
+    if (d.status === 'ok') {
+      serverUrl = url;
+      localStorage.setItem('jobdash_server', url);
+      statusEl.textContent = 'Verbunden ✓';
+      statusEl.className = 'url-status ok';
+    } else throw new Error();
+  } catch(e) {
+    statusEl.textContent = 'Nicht erreichbar';
+    statusEl.className = 'url-status';
+  }
+}
+
+function setStatus(msg, type='', loading=false) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status' + (type ? ' '+type : '');
+  document.getElementById('progress').className = loading ? 'progress active' : 'progress';
+}
+
+async function analyze() {
+  const text = document.getElementById('jobText').value.trim();
+  if (!text) { setStatus('Bitte Stellentext einfügen.', 'err'); return; }
+  if (!serverUrl) { setStatus('Bitte zuerst Server-URL verbinden.', 'err'); return; }
+
+  document.getElementById('btnAnalyze').disabled = true;
+  setStatus('Wird analysiert …', '', true);
+
+  try {
+    const resp = await fetch(serverUrl + '/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    const job = await resp.json();
+    if (job.error) throw new Error(job.error);
+    job.id = Date.now().toString();
+    job.addedAt = new Date().toLocaleDateString('de-DE');
+    jobs.push(job);
+    saveState();
+    renderTable();
+    document.getElementById('jobText').value = '';
+    setStatus(job.firma + ' – ' + job.rolle + ' gespeichert ✓', 'ok');
+    setTimeout(() => setStatus(''), 4000);
+  } catch(e) {
+    setStatus('Fehler: ' + e.message, 'err');
+  }
+  document.getElementById('btnAnalyze').disabled = false;
+  document.getElementById('progress').className = 'progress';
+}
+
+function deleteJob(id) {
+  if (!confirm('Job entfernen?')) return;
+  jobs = jobs.filter(j => j.id !== id);
+  saveState();
+  renderTable();
+}
+
+function rc(s){ return s>=70?'rg':s>=45?'ra':'rr'; }
+function tc(s){ return s>=70?'tg':s>=45?'ta':'tr'; }
+function tt(s){ return s>=70?'Unbedingt':s>=45?'Ggf.':'Weglassen'; }
+function remHtml(v) {
+  const l=(v||'').toLowerCase();
+  if(l.includes('remote')) return '<span class="pill pill-r">Remote</span>';
+  if(l.includes('hybrid')) return '<span class="pill pill-h">Hybrid</span>';
+  return '<span class="pill pill-o">'+(v||'k.A.')+'</span>';
+}
+function barH(v,c){ const n=Math.round(v||0); return `<div class="bar-track"><div class="bar-fill ${c}" style="width:${n}%"></div></div><span class="sub-n">${n}</span>`; }
+
+function renderTable() {
+  const sorted = [...jobs].sort((a,b) => b.totalScore - a.totalScore);
+  const groups = [
+    {label:'Unbedingt bewerben', items: sorted.filter(j=>j.totalScore>=70)},
+    {label:'Ggf. bewerben', items: sorted.filter(j=>j.totalScore>=45&&j.totalScore<70)},
+    {label:'Weglassen', items: sorted.filter(j=>j.totalScore<45)}
+  ];
+  document.getElementById('s0').textContent = jobs.length;
+  document.getElementById('s1').textContent = jobs.filter(j=>j.totalScore>=70).length;
+  document.getElementById('s2').textContent = jobs.filter(j=>j.totalScore>=45&&j.totalScore<70).length;
+  document.getElementById('s3').textContent = jobs.filter(j=>j.totalScore<45).length;
+
+  if (!jobs.length) {
+    document.getElementById('tbody').innerHTML = '<tr class="empty-row"><td colspan="10">Noch keine Jobs – Server verbinden und ersten Stellentext einfügen.</td></tr>';
+    return;
+  }
+  let html = '';
+  groups.forEach(g => {
+    if (!g.items.length) return;
+    html += `<tr class="section-row"><td colspan="10">${g.label} (${g.items.length})</td></tr>`;
+    g.items.forEach(j => {
+      const n = Math.round(j.totalScore);
+      const s = j.scores || {};
+      const kern = (j.kernaufgaben||[]).slice(0,4).map(k=>`<li>${k}</li>`).join('');
+      const lueck = (j.luecken||[]).slice(0,3).map(l=>`<li class="gap-li">${l}</li>`).join('');
+      html += `<tr class="drow">
+        <td style="font-weight:500;">${j.firma||'–'}<br><span style="font-size:11px;color:var(--text3);font-weight:400;">${j.addedAt||''}</span></td>
+        <td>${j.rolle||'–'}<br><span class="tag ${tc(n)}">${tt(n)}</span></td>
+        <td>${j.ort||'–'}</td>
+        <td>${remHtml(j.remote)}</td>
+        <td style="font-size:12px;color:var(--text2);">${j.gehalt||'k.A.'}</td>
+        <td style="font-size:12px;color:var(--text2);">${j.recruiter||'–'}</td>
+        <td><div class="score-ring ${rc(n)}">${n}</div></td>
+        <td><div class="sub-bars">
+          <div class="sub-row"><span class="sub-lbl">CV-Fit</span>${barH(s.cv,'bcv')}</div>
+          <div class="sub-row"><span class="sub-lbl">Präferenzen</span>${barH(s.pref,'bpref')}</div>
+          <div class="sub-row"><span class="sub-lbl">Gehalt</span>${barH(s.salary,'bsal')}</div>
+          <div class="sub-row"><span class="sub-lbl">Karriere</span>${barH(s.career,'bcar')}</div>
+        </div></td>
+        <td><div class="detail">
+          ${j.unternehmen_info?`<span class="firm-chip">${j.unternehmen_info}</span>`:''}
+          ${j.begruendung?`<p style="margin-bottom:5px;">${j.begruendung}</p>`:''}
+          ${kern?`<strong>Aufgaben:</strong><ul>${kern}</ul>`:''}
+          ${lueck?`<strong>Lücken:</strong><ul>${lueck}</ul>`:''}
+        </div></td>
+        <td><button class="btn-del" onclick="deleteJob('${j.id}')">&#x2715;</button></td>
+      </tr>`;
+    });
+  });
+  document.getElementById('tbody').innerHTML = html;
+}
+
+function exportCSV() {
+  if (!jobs.length) return;
+  const h = ['Firma','Rolle','Ort','Modell','Gehalt','Recruiter','Score','CV','Präf','Gehalt-S','Karriere','Begründung','Datum'];
+  const rows = jobs.map(j=>[j.firma,j.rolle,j.ort,j.remote,j.gehalt,j.recruiter,j.totalScore,j.scores?.cv,j.scores?.pref,j.scores?.salary,j.scores?.career,j.begruendung,j.addedAt].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`));
+  const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='jobs_forstmann.csv';
+  a.click();
+}
+
+loadState();
+</script>
+</body>
+</html>
